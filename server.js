@@ -3,20 +3,25 @@ const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./configs/db');
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+// --- ส่วนที่แก้: เปลี่ยนเส้นทางจาก Equipments เป็น Books ---
 app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/equipments', require('./routes/equipment.routes'));
+app.use('/api/books', require('./routes/book.routes')); // เรียกใช้ไฟล์ routes/book.routes.js
+app.use('/api/transactions', require('./routes/transaction.routes'));
 
 const port = process.env.PORT || 5000;
+
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'API is running',
+    message: 'Library API is running', // เปลี่ยนข้อความนิดหน่อยให้เข้าธีม
     timestamp: new Date().toISOString()
   });
 });
+
 connectDB(process.env.MONGO_URI)
-  .then(() => app.listen(port, () => console.log(`Lab Borrow API on http://localhost:${port}`)))
+  .then(() => app.listen(port, () => console.log(`Library API on http://localhost:${port}`)))
   .catch(err => { console.error(err); process.exit(1); });
