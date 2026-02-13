@@ -1,9 +1,8 @@
 const Book = require('../models/book.model');
 
-// 2.2.6 แสดงรายการหนังสือทั้งหมด พร้อมดึงข้อมูลคนยืม (Populate)
+// แสดงรายการหนังสือทั้งหมด พร้อมดึงข้อมูลคนยืม (Populate)
 exports.getBooks = async (req, res) => {
   try {
-    // 🔥 แก้ไขตรงนี้: เพิ่ม .populate เพื่อไปดึง displayName ของคนยืมมาจาก User Model
     const books = await Book.find().populate('borrowedBy', 'displayName');
     res.json(books);
   } catch (err) {
@@ -11,7 +10,7 @@ exports.getBooks = async (req, res) => {
   }
 };
 
-// 2.2.13 เพิ่มรายการหนังสือ (Admin)
+// เพิ่มรายการหนังสือ (Admin)
 exports.createBook = async (req, res) => {
   try {
     const { book_name, author, category } = req.body;

@@ -5,16 +5,16 @@ const Book = require('../models/book.model');
 exports.borrowBook = async (req, res) => {
   try {
     const { book_id } = req.body;
-    const user_id = req.user.id; // ได้จาก Token
+    const user_id = req.user.id; 
 
-    // 1. สร้าง Transaction บันทึกประวัติ
+    // สร้าง Transaction บันทึกประวัติ
     const newTrans = new Transaction({ user_id, book_id });
     await newTrans.save();
 
-    // 2. 🔥 อัปเดตหนังสือ: เปลี่ยนสถานะ และบันทึกว่า "ใครยืม" (borrowedBy)
+    // อัปเดตหนังสือ
     await Book.findByIdAndUpdate(book_id, { 
       status: 'borrowed',
-      borrowedBy: user_id // ใส่ ID ของคนที่ยืมลงในหนังสือเล่มนั้น
+      borrowedBy: user_id 
     });
 
     res.status(201).json(newTrans);
@@ -28,17 +28,17 @@ exports.returnBook = async (req, res) => {
   try {
     const { transaction_id } = req.body;
 
-    // 1. อัปเดต Transaction ว่าคืนแล้ว
+    // อัปเดต Transaction 
     const trans = await Transaction.findByIdAndUpdate(
       transaction_id,
       { status: 'returned', return_date: new Date() },
       { new: true }
     );
 
-    // 2. 🔥 อัปเดตหนังสือ: เปลี่ยนสถานะกลับ และล้างชื่อคนยืมออก (เป็น null)
+    // อัปเดตหนังสือ
     await Book.findByIdAndUpdate(trans.book_id, { 
       status: 'available',
-      borrowedBy: null // ล้างชื่อคนยืมออกเพื่อให้หนังสือว่าง
+      borrowedBy: null 
     });
 
     res.json(trans);
@@ -47,11 +47,11 @@ exports.returnBook = async (req, res) => {
   }
 };
 
-// 2.2.10 ดูประวัติการยืมของฉัน (My History)
+// ดูประวัติการยืมของฉัน (My History)
 exports.getMyHistory = async (req, res) => {
   try {
     const history = await Transaction.find({ user_id: req.user.id })
-      .populate('book_id') // ดึงข้อมูลหนังสือมาโชว์
+      .populate('book_id') 
       .sort({ createdAt: -1 });
     res.json(history);
   } catch (err) {

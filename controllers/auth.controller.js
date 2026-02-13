@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
-const Book = require('../models/book.model'); // 🔥 ต้องนำเข้า Book Model เพื่อจัดการสถานะหนังสือ
+const Book = require('../models/book.model'); 
 
 // ฟังก์ชันสร้าง Token
 function signToken(user) {
@@ -12,7 +12,7 @@ function signToken(user) {
   );
 }
 
-// 1. ลงทะเบียนสมาชิก (Register)
+// ลงทะเบียนสมาชิก (Register)
 exports.register = async (req, res) => {
   const { username, displayName, password } = req.body || {};
   if (!username || !displayName || !password) {
@@ -27,7 +27,7 @@ exports.register = async (req, res) => {
     username: username.toLowerCase(),
     displayName,
     passwordHash,
-    role: 'staff' // ค่าเริ่มต้นเป็น staff
+    role: 'staff' 
   });
 
   const token = signToken(user);
@@ -37,7 +37,7 @@ exports.register = async (req, res) => {
   });
 };
 
-// 2. เข้าสู่ระบบ (Login)
+// เข้าสู่ระบบ (Login)
 exports.login = async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: { message: 'ข้อมูลไม่ครบ' } });
@@ -55,17 +55,16 @@ exports.login = async (req, res) => {
   });
 };
 
-// 3. ตรวจสอบข้อมูลผู้ใช้ปัจจุบัน (Get Me)
+// ตรวจสอบข้อมูลผู้ใช้ปัจจุบัน (Get Me)
 exports.me = async (req, res) => {
   const user = await User.findById(req.user.id).select('username displayName role');
   if (!user) return res.status(404).json({ error: { message: 'ไม่พบผู้ใช้' } });
   res.json({ id: user._id.toString(), username: user.username, displayName: user.displayName, role: user.role });
 };
 
-// 4. แสดงข้อมูลสมาชิกทั้งหมด (Admin Only)
+// แสดงข้อมูลสมาชิกทั้งหมด (Admin Only)
 exports.getAllUsers = async (req, res) => {
   try {
-    // ดึงรายชื่อทุกคนโดยไม่เอา passwordHash
     const users = await User.find().select('-passwordHash');
     res.json(users);
   } catch (err) {
@@ -73,13 +72,10 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// 5. ลบสมาชิก (Admin Only) พร้อมคืนหนังสืออัตโนมัติ
+// ลบสมาชิก (Admin Only) พร้อมคืนหนังสืออัตโนมัติ
 exports.deleteUser = async (req, res) => {
   try {
     const userId = req.params.id; 
-    
-    // 🔥 ขั้นตอนสำคัญ: คืนหนังสือทุกเล่มที่ User คนนี้ยืมค้างไว้
-    // หาหนังสือที่ borrowedBy ตรงกับ ID ที่จะลบ แล้วตั้งค่ากลับเป็นว่าง (available)
     await Book.updateMany(
       { borrowedBy: userId }, 
       { status: 'available', borrowedBy: null }
